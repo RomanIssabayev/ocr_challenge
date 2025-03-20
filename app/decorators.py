@@ -4,18 +4,18 @@ from functools import wraps
 from .models import User
 import logging
 
-class CustomLogFilter(logging.Filter):
-    def filter(self, record):
-        if 'GET /' in record.getMessage() or 'POST /' in record.getMessage():
-            return False
-        return True
-
-logging.basicConfig(filename='access.log', level=logging.INFO, format='%(asctime)s - %(message)s')
+# class CustomLogFilter(logging.Filter):
+#     def filter(self, record):
+#         if 'GET /' in record.getMessage() or 'POST /' in record.getMessage():
+#             return False
+#         return True
+#
+# logging.basicConfig(filename='access.log', level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger()
-logger.addFilter(CustomLogFilter())
-
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
+# logger.addFilter(CustomLogFilter())
+#
+# log = logging.getLogger('werkzeug')
+# log.setLevel(logging.ERROR)
 
 def log_access(user, endpoint):
     logger.info(f"User: {user}, Endpoint: {endpoint}")
