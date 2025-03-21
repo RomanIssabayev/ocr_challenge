@@ -8,6 +8,12 @@ import requests
 
 home_bp = Blueprint("home", __name__)
 
+def calculate_percentage_score(problem_count, total_count):
+    if total_count == 0:
+        return "N/A"
+    score = (1 - (problem_count / total_count)) * 100
+    return f"{round(score, 1)}%"
+
 @home_bp.route('/home')
 @login_required
 def home():
@@ -31,44 +37,51 @@ def process_json():
         ai_response = requests.post(current_app.config["AZURE_MODEL"], json=payload, headers={"Content-Type": "application/json"})
 
         data_to_share = []
-        score_lexical = 0
-        score_numerical = 0
+        sum_total_tokens_count = 0
+        sum_total_numbers_count = 0
+        sum_lexical_problems = 0
+        sum_numerical_problems = 0
         for page in ai_response.json()['page_statistics']:
-            data_to_share.append({
-                "page_number": page['page_number'],
-                "total_tokens_count": page['total_tokens_count'],
-                "total_numbers_count": page['total_numbers_count'],
-                "lexical_problem_tokens_count": page['lexical_problem_tokens_count'],
-                "numerical_problem_tokens_count": page['numerical_problem_tokens_count'],
-                "problems": len(page['problems'])
-            })
+            sum_total_tokens_count += page['total_tokens_count']
+            sum_total_numbers_count += page['total_numbers_count']
+            sum_lexical_problems += page['lexical_problem_tokens_count']
+            problem_texts = []
+            temp_sum_numerical_problems = 0
             for error in page['problems']:
-                if error['error_type'] == 'lexical':
-                    score_lexical += IMPACT_SCORES[classify_error(error['explanation'], error['error_type'])]
-                else:
-                    score_numerical += IMPACT_SCORES[classify_error(error['explanation'], error['error_type'])]
+                problem_texts.append(f"{error['error_type'].capitalize()}: {error['explanation']}")
+                if error['error_type'] == 'numerical':
+                    sum_numerical_problems += 1
+                    temp_sum_numerical_problems += 1
+
+            data_to_share.append({
+                "Page number": page['page_number'],
+                "Lexical score %": calculate_percentage_score(page['lexical_problem_tokens_count'], page['total_tokens_count']),
+                "Numerical score %": calculate_percentage_score(temp_sum_numerical_problems, page['total_numbers_count']),
+                "Problems": "<br>".join(problem_texts)
+            })
+
+        overall_scores = {
+            "lexical_score": calculate_percentage_score(sum_lexical_problems, sum_total_tokens_count),
+            "numerical_score": calculate_percentage_score(sum_numerical_problems, sum_total_numbers_count)
+        }
 
         download_folder = os.path.join(os.getcwd(), 'downloads')
         os.makedirs(download_folder, exist_ok=True)
 
         filename = "analysis.xlsx"
         file_path = os.path.join(download_folder, filename)
-        pd.DataFrame.from_dict(data_to_share).sort_values('page_number').to_excel(file_path)
+        pd.DataFrame.from_dict(data_to_share).sort_values('Page number').to_excel(file_path)
 
         download_url = url_for('home.download_file', filename=filename)
 
-        pivot = [{
-            "Lexical mistake score": score_lexical,
-            "Numerical mistake score": score_numerical,
-        }]
-
         return jsonify({
-            "structured_data": pivot,
+            "structured_data": data_to_share,
+            "overall_scores": overall_scores,
             "download_url": download_url
         })
 
     except Exception as e:
-        return jsonify({"error": e}), 400
+        return jsonify({"error": str(e)}), 400
 
 
 @home_bp.route('/download/<filename>')
@@ -78,51 +91,3 @@ def download_file(filename):
     return send_file(os.path.join(download_folder, filename), as_attachment=True)
 
 
-
-LEXICAL_ISSUES = {
-    "misspelling": ["misspelling", "misspell", "incorrect term", "intended to be"],
-    "unclear_abbreviation": ["unclear", "may be an OCR error", "missing context"],
-    "incorrect_symbol": ["symbol seems out of place", "incorrect formatting"],
-    "hyphenation_issue": ["hyphen split", "incorrect hyphen"],
-    "incomplete_word": ["appears incomplete", "incomplete term"],
-    "formatting_issue": ["incorrectly formatted", "split word", "hyphenated"],
-    "typographical_error": ["typographical error", "does not fit the context"],
-    "unusual_term": ["seems unusual", "might be incorrect"]
-}
-
-NUMERICAL_ISSUES = {
-    "formatting_issue": ["unnecessary space", "formatting", "formatted"],
-    "wrong_number": ["incorrect number", "incorrectly written"],
-    "consistency_issue": ["should follow the same standard"],
-    "unclear_reference": ["appears to be an unexplained numerical reference"],
-    "alphanumeric_confusion": ["appears to be a numerical or alphanumeric sequence"],
-}
-
-# Assign impact scores to issue categories
-IMPACT_SCORES = {
-    "misspelling": 2,
-    "unclear_abbreviation": 2,
-    "incorrect_symbol": 1,
-    "hyphenation_issue": 1,
-    "incomplete_word": 2,
-    "formatting_issue": 1,
-    "typographical_error": 1,
-    "unusual_term": 2,
-    "wrong_number": 5,
-    "consistency_issue": 2,
-    "unknown": 1,
-    "unclear_reference": 2,
-    "alphanumeric_confusion": 3,
-}
-
-# Function to classify error based on explanation
-def classify_error(explanation, error_type):
-    if error_type == "lexical":
-        for issue, keywords in LEXICAL_ISSUES.items():
-            if any(keyword in explanation.lower() for keyword in keywords):
-                return issue
-    elif error_type == "numerical":
-        for issue, keywords in NUMERICAL_ISSUES.items():
-            if any(keyword in explanation.lower() for keyword in keywords):
-                return issue
-    return "unknown"

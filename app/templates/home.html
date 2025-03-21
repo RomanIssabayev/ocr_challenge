@@ -12,13 +12,13 @@
     }
     .container {
       width: 70%;
-      margin: 20px auto; /* Centers the container and gives it top/bottom spacing */
+      margin: 20px auto;
     }
     .header {
       background-color: #ffffff;
       padding: 30px 20px;
       display: flex;
-      justify-content: space-between; /* Welcome message on right, logout on left */
+      justify-content: space-between;
       align-items: center;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       width: 68%;
@@ -59,11 +59,10 @@
     #jsonInput {
       display: none;
     }
-    /* Table container placeholder */
     #tableContainer {
       margin-top: 20px;
-      padding: 10px;
-      border: 1px dashed #ccc;
+<!--      padding: 10px;-->
+<!--      border: 1px dashed #ccc;-->
       text-align: center;
       color: #777;
     }
@@ -101,6 +100,23 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    .accordion-cell {
+  cursor: pointer;
+  position: relative;
+}
+.accordion-content {
+  display: none;
+  margin-top: 10px;
+  color: #555;
+}
+.accordion-cell.expanded .accordion-content {
+  display: block;
+}
+.summary {
+  font-weight: bold;
+  color: #222;
+}
+
   </style>
 </head>
 <body>
@@ -112,13 +128,10 @@
     <div class="frame">
       <p style="color: #5a5a5a;">Select a JSON file with a button below and the quality check metrics will be displayed within a table</p>
 
-      <!-- Button to select JSON file -->
       <button id="selectFileButton">Select JSON File</button>
-      <!-- Hidden file input -->
       <input type="file" id="jsonInput" accept=".json" style="display: none;">
       <div class="spinner" id="spinner"></div>
 
-      <!-- Container for the output table -->
       <div id="tableContainer">
         <p>No table data available. Please select a JSON file.</p>
       </div>
