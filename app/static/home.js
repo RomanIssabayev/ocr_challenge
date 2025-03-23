@@ -2,7 +2,7 @@ let originalTitle = document.title;
 let titleInterval = null;
 
 function startTitleSpinner() {
-  const frames = ['⠋', '⠙', '⠸', '⠴', '⠦', '⠇'];
+  const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
   let i = 0;
   titleInterval = setInterval(() => {
     document.title = `${frames[i % frames.length]} Processing...`;
