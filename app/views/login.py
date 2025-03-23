@@ -23,7 +23,10 @@ def login():
             return redirect(url_for("home.home"))
         flash("Invalid Credentials", "error")
         return render_template("login.html")
-    return render_template("login.html")
+    else:
+        if current_user.is_authenticated:
+            return redirect(url_for("home.home"))
+        return render_template("login.html")
 
 @login_bp.route("/logout")
 @login_required

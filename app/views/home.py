@@ -5,6 +5,7 @@ from flask_login import current_user
 from app.decorators import login_required
 import pandas as pd
 import requests
+import pickle
 
 home_bp = Blueprint("home", __name__)
 
@@ -14,26 +15,26 @@ def calculate_percentage_score(problem_count, total_count):
     score = (1 - (problem_count / total_count)) * 100
     return f"{round(score, 1)}%"
 
-@home_bp.route('/home')
+@home_bp.route("/home")
 @login_required
 def home():
     username = current_user.username
-    return render_template('home.html', username=username)
+    return render_template("home.html", username=username)
 
 
-@home_bp.route('/process_json', methods=['POST'])
+@home_bp.route("/process_json", methods=["POST"])
 @login_required
 def process_json():
     try:
-        if 'file' not in request.files:
+        if "file" not in request.files:
             return jsonify({"error": "No file uploaded"}), 400
-        file = request.files['file']
+        file = request.files["file"]
         try:
             data = json.load(file)
         except Exception as e:
             return jsonify({"error": "Invalid JSON file."}), 400
 
-        payload = {"query_string": data['analyzeResult']['content']}
+        payload = {"query_string": data["analyzeResult"]["content"]}
         ai_response = requests.post(current_app.config["AZURE_MODEL"], json=payload, headers={"Content-Type": "application/json"})
 
         data_to_share = []
@@ -41,23 +42,40 @@ def process_json():
         sum_total_numbers_count = 0
         sum_lexical_problems = 0
         sum_numerical_problems = 0
-        for page in ai_response.json()['page_statistics']:
-            sum_total_tokens_count += page['total_tokens_count']
-            sum_total_numbers_count += page['total_numbers_count']
-            sum_lexical_problems += page['lexical_problem_tokens_count']
+        for page in ai_response.json()["page_statistics"]:
+            sum_total_tokens_count += page["total_tokens_count"]
+            sum_total_numbers_count += page["total_numbers_count"]
+            sum_lexical_problems += page["lexical_problem_tokens_count"]
             problem_texts = []
+            data_to_save_in_file = []
             temp_sum_numerical_problems = 0
-            for error in page['problems']:
-                problem_texts.append(f"{error['error_type'].capitalize()}: {error['explanation']}")
-                if error['error_type'] == 'numerical':
+            for index,error in enumerate(page["problems"]):
+                temp_dict = {
+                    "Error #": index + 1,
+                    "Type": error["error_type"].capitalize(),
+                    "Text": error["problem_text"],
+                    "Explanation": error["explanation"]
+                }
+                problem_texts.append(temp_dict)
+                if error["error_type"] == "numerical":
                     sum_numerical_problems += 1
                     temp_sum_numerical_problems += 1
 
+                data_to_save_in_file.append({
+                    "Page number": page["page_number"],
+                    "Lexical score %": calculate_percentage_score(page["lexical_problem_tokens_count"], page["total_tokens_count"]),
+                    "Numerical score %": calculate_percentage_score(temp_sum_numerical_problems, page["total_numbers_count"]),
+                    "Error": index + 1,
+                    "Type": error["error_type"].capitalize(),
+                    "Text": error["problem_text"],
+                    "Explanation": error["explanation"]
+                })
+
             data_to_share.append({
-                "Page number": page['page_number'],
-                "Lexical score %": calculate_percentage_score(page['lexical_problem_tokens_count'], page['total_tokens_count']),
-                "Numerical score %": calculate_percentage_score(temp_sum_numerical_problems, page['total_numbers_count']),
-                "Problems": "<br>".join(problem_texts)
+                "Page number": page["page_number"],
+                "Lexical score %": calculate_percentage_score(page["lexical_problem_tokens_count"], page["total_tokens_count"]),
+                "Numerical score %": calculate_percentage_score(temp_sum_numerical_problems, page["total_numbers_count"]),
+                "Problems": pd.DataFrame(problem_texts).to_html(index=False)
             })
 
         overall_scores = {
@@ -65,14 +83,14 @@ def process_json():
             "numerical_score": calculate_percentage_score(sum_numerical_problems, sum_total_numbers_count)
         }
 
-        download_folder = os.path.join(os.getcwd(), 'downloads')
+        download_folder = os.path.join(os.getcwd(), "downloads")
         os.makedirs(download_folder, exist_ok=True)
 
         filename = "analysis.xlsx"
         file_path = os.path.join(download_folder, filename)
-        pd.DataFrame.from_dict(data_to_share).sort_values('Page number').to_excel(file_path)
+        pd.DataFrame.from_dict(data_to_save_in_file).sort_values(["Page number", "Error"]).to_excel(file_path, index=False)
 
-        download_url = url_for('home.download_file', filename=filename)
+        download_url = url_for("home.download_file", filename=filename)
 
         return jsonify({
             "structured_data": data_to_share,
@@ -84,10 +102,10 @@ def process_json():
         return jsonify({"error": str(e)}), 400
 
 
-@home_bp.route('/download/<filename>')
+@home_bp.route("/download/<filename>")
 @login_required
 def download_file(filename):
-    download_folder = os.path.join(os.getcwd(), 'downloads')
+    download_folder = os.path.join(os.getcwd(), "downloads")
     return send_file(os.path.join(download_folder, filename), as_attachment=True)
 
 

@@ -63,6 +63,7 @@ document.getElementById('jsonInput').addEventListener('change', function(event) 
           resultLine.style.fontWeight = 'bold';
           resultLine.style.marginTop = '20px';
           resultLine.style.color = '#333';
+          resultLine.style.fontSize = '20px'
 
           document.getElementById('tableContainer').prepend(resultLine);
         }
@@ -95,7 +96,7 @@ function generateTable(data) {
   const keys = orderedKeys;
   const table = document.createElement('table');
   const colWidths = {
-    "Page number": "80px",
+    "Page number": "65px",
     "Lexical score %": "80px",
     "Numerical score %": "85px",
     "Problems": "400px",

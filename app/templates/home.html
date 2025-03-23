@@ -3,141 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <title>Home</title>
-  <style>
-    body {
-      background-color: #f5f5f5;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      width: 70%;
-      margin: 20px auto;
-    }
-    .header {
-      background-color: #ffffff;
-      padding: 30px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      width: 68%;
-      margin: auto;
-      border-radius: 8px;
-    }
-    .header a {
-      text-decoration: none;
-      color: #5a5a5a;
-      font-size: 16px;
-    }
-    .header .welcome {
-      font-size: 18px;
-      color: black;
-    }
-    .frame {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      margin-top: 20px;
-      text-align: left;
-    }
-    h1 {
-      color: #333;
-      margin-bottom: 10px;
-    }
-    p {
-      margin-bottom: 20px;
-    }
-    /* Button styling */
-    #selectFileButton {
-      margin: 20px 0;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    #jsonInput {
-      display: none;
-    }
-    #tableContainer {
-      margin-top: 20px;
-<!--      padding: 10px;-->
-<!--      border: 1px dashed #ccc;-->
-      text-align: center;
-      color: #777;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
-     #downloadLink {
-      display: block;
-      margin-top: 20px;
-      text-decoration: none;
-      color: #007BFF;
-      font-weight: bold;
-
-    }
-        .spinner {
-      display: none;
-      margin: 20px auto;
-      width: 40px;
-      height: 40px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #5a5a5a;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .accordion-cell {
-  cursor: pointer;
-  position: relative;
-}
-.accordion-content {
-  display: none;
-  margin-top: 10px;
-  color: #555;
-}
-.accordion-cell.expanded .accordion-content {
-  display: block;
-}
-.summary {
-  font-weight: bold;
-  color: #222;
-}
-
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
 </head>
 <body>
   <div class="header">
-    <span class="welcome">Welcome to OCR data quality check tool</span>
+    <span class="welcome">OCR data quality check tool</span>
     <a href="{{ url_for('login.logout') }}">Logout</a>
   </div>
   <div class="container">
     <div class="frame">
-      <p style="color: #5a5a5a;">Select a JSON file with a button below and the quality check metrics will be displayed within a table</p>
-
+      <p style="color: #5a5a5a;">Select a JSON file using the button below, and your quality check metrics will be neatly displayed in a table.</p>
       <button id="selectFileButton">Select JSON File</button>
       <input type="file" id="jsonInput" accept=".json" style="display: none;">
       <div class="spinner" id="spinner"></div>
-
       <div id="tableContainer">
         <p>No table data available. Please select a JSON file.</p>
       </div>
       <div id="downloadContainer"></div>
     </div>
   </div>
-  <script src="{{url_for('static', filename='home.js')}}"></script>
+  <script src="{{ url_for('static', filename='home.js') }}"></script>
 </body>
 </html>

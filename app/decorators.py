@@ -11,7 +11,9 @@ import logging
 #         return True
 #
 # logging.basicConfig(filename='access.log', level=logging.INFO, format='%(asctime)s - %(message)s')
+
 logger = logging.getLogger()
+
 # logger.addFilter(CustomLogFilter())
 #
 # log = logging.getLogger('werkzeug')
