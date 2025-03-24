@@ -1,5 +1,4 @@
     html, body {
-        height: 100%;
         margin: 0;
         padding: 0;
     }
@@ -16,28 +15,39 @@
         height: 100px;
         background-color: #ffffff;
         display: flex;
-        justify-content: space-between;
         align-items: center;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         width: 70%;
-        margin: auto;
-        margin-top: 10px;
+        margin: 10px auto;
         border-radius: 8px;
     }
-    .header a {
+
+    .welcome {
+        font-size: 24px;
+        color: black;
+        margin-left: 20px
+    }
+
+    .header-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+    }
+
+    .header-right a {
         text-decoration: none;
         color: #5a5a5a;
         font-size: 16px;
-        margin-right: 35px
+        margin-right: 35px;
     }
-    .header a:hover {
+
+    .header-right a:last-child {
+        margin-right: 20px;
+    }
+
+    .header-right a:hover {
         text-decoration: underline;
         color: red;
-    }
-    .header .welcome {
-        font-size: 24px;
-        color: black;
-        margin-left: 35px
     }
     .frame {
         background-color: #fff;
@@ -124,4 +134,17 @@
     }
     .dataframe td:nth-child(4) {
         text-align: left;
+    }
+    .contact-info {
+        color: #5a5a5a;
+        font-size: 20px;
+        line-height: 1.6;
+        padding: 15px;
+        background-color: #fff;
+        max-width: 300px;
+        margin: 20px auto;
+        text-align: center;
+    }
+    .contact-info p {
+        margin: 5px 0;
     }

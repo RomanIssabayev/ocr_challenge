@@ -17,9 +17,11 @@ def create_app():
 
     from .views.login import login_bp
     from .views.home import home_bp
+    from .views.contact_us import contact_bp
 
     app.register_blueprint(login_bp)
     app.register_blueprint(home_bp)
+    app.register_blueprint(contact_bp)
 
     return app
 

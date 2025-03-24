@@ -19,7 +19,7 @@ def calculate_percentage_score(problem_count, total_count):
 @login_required
 def home():
     username = current_user.username
-    return render_template("home.html", username=username)
+    return render_template("home.html")
 
 
 @home_bp.route("/process_json", methods=["POST"])
@@ -38,17 +38,9 @@ def process_json():
         ai_response = requests.post(current_app.config["AZURE_MODEL"], json=payload, headers={"Content-Type": "application/json"})
 
         data_to_share = []
-        sum_total_tokens_count = 0
-        sum_total_numbers_count = 0
-        sum_lexical_problems = 0
-        sum_numerical_problems = 0
         for page in ai_response.json()["page_statistics"]:
-            sum_total_tokens_count += page["total_tokens_count"]
-            sum_total_numbers_count += page["total_numbers_count"]
-            sum_lexical_problems += page["lexical_problem_tokens_count"]
             problem_texts = []
             data_to_save_in_file = []
-            temp_sum_numerical_problems = 0
             for index,error in enumerate(page["problems"]):
                 temp_dict = {
                     "Error #": index + 1,
@@ -57,14 +49,11 @@ def process_json():
                     "Explanation": error["explanation"]
                 }
                 problem_texts.append(temp_dict)
-                if error["error_type"] == "numerical":
-                    sum_numerical_problems += 1
-                    temp_sum_numerical_problems += 1
 
                 data_to_save_in_file.append({
                     "Page number": page["page_number"],
-                    "Lexical score %": calculate_percentage_score(page["lexical_problem_tokens_count"], page["total_tokens_count"]),
-                    "Numerical score %": calculate_percentage_score(temp_sum_numerical_problems, page["total_numbers_count"]),
+                    "Lexical score %": page['lexical_score'],
+                    "Numerical score %": page['numerical_score'],
                     "Error": index + 1,
                     "Type": error["error_type"].capitalize(),
                     "Text": error["problem_text"],
@@ -73,14 +62,14 @@ def process_json():
 
             data_to_share.append({
                 "Page number": page["page_number"],
-                "Lexical score %": calculate_percentage_score(page["lexical_problem_tokens_count"], page["total_tokens_count"]),
-                "Numerical score %": calculate_percentage_score(temp_sum_numerical_problems, page["total_numbers_count"]),
+                "Lexical score %": page['lexical_score'],
+                "Numerical score %": page['numerical_score'],
                 "Problems": pd.DataFrame(problem_texts).to_html(index=False)
             })
 
         overall_scores = {
-            "lexical_score": calculate_percentage_score(sum_lexical_problems, sum_total_tokens_count),
-            "numerical_score": calculate_percentage_score(sum_numerical_problems, sum_total_numbers_count)
+            "lexical_score": ai_response.json()['overall_lexical_score'],
+            "numerical_score": ai_response.json()['overall_numerical_score']
         }
 
         download_folder = os.path.join(os.getcwd(), "downloads")

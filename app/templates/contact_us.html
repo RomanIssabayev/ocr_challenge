@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>The Tool</title>
+  <title>Contact Us</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
@@ -12,22 +12,19 @@
   <div class="header">
     <span class="welcome">OCR data quality check tool</span>
     <div class="header-right">
-      <a href="{{ url_for('contact_us.contact_us') }}">Contact Us</a>
+      <a href="{{ url_for('home.home') }}">OCR Data Quality Check Tool</a>
       <a href="{{ url_for('login.logout') }}">Logout</a>
     </div>
   </div>
   <div class="container">
     <div class="frame">
-      <p style="color: #5a5a5a;">Select a JSON file using the button below, and your quality check metrics will be neatly displayed in a table.</p>
-      <button id="selectFileButton">Select JSON File</button>
-      <input type="file" id="jsonInput" accept=".json" style="display: none;">
-      <div class="spinner" id="spinner"></div>
-      <div id="tableContainer">
-        <p>No table data available. Please select a JSON file.</p>
-      </div>
-      <div id="downloadContainer"></div>
+        <div class="contact-info">
+            <p>Senior Software & AI Engineer</p>
+            <p>Emil Shaykhilislamov</p>
+            <p>Mobile: +36-70-583-3139</p>
+            <p>Hungary, Budapest</p>
+        </div>
     </div>
   </div>
-  <script src="{{ url_for('static', filename='home.js') }}"></script>
 </body>
 </html>
