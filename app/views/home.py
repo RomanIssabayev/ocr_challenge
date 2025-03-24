@@ -1,19 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file, current_app
+from flask import Blueprint, render_template, request, url_for, jsonify, send_file, current_app
 import json
 import os
-from flask_login import current_user
 from app.decorators import login_required
 import pandas as pd
 import requests
-import pickle
 
 home_bp = Blueprint("home", __name__)
-
-def calculate_percentage_score(problem_count, total_count):
-    if total_count == 0:
-        return "N/A"
-    score = (1 - (problem_count / total_count)) * 100
-    return f"{round(score, 1)}%"
 
 @home_bp.route("/home")
 @login_required
@@ -43,9 +35,9 @@ def process_json():
         )
 
         data_to_share = []
+        data_to_save_in_file = []
         for page in ai_response.json()["page_statistics"]:
             problem_texts = []
-            data_to_save_in_file = []
             for index,error in enumerate(page["problems"]):
                 temp_dict = {
                     "Error #": index + 1,
@@ -73,8 +65,8 @@ def process_json():
             })
 
         overall_scores = {
-            "lexical_score": ai_response.json()['overall_lexical_score'],
-            "numerical_score": ai_response.json()['overall_numerical_score']
+            "lexical_score": str(ai_response.json()['overall_lexical_score']) + "%",
+            "numerical_score": str(ai_response.json()['overall_numerical_score']) + "%"
         }
 
         download_folder = os.path.join(os.getcwd(), "downloads")
