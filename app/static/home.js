@@ -45,11 +45,17 @@ document.getElementById('jsonInput').addEventListener('change', function(event) 
         stopTitleSpinner();
 
         // Build table using structured_data from response.
+
+        if (result.error) {
+          document.getElementById('tableContainer').innerHTML = `<p>Error: ${result.error}</p>`;
+        }
+
         if (result.structured_data) {
           generateTable(result.structured_data);
-        } else {
-          document.getElementById('tableContainer').innerHTML = '<p>No valid structured data received.</p>';
         }
+//        else {
+//          document.getElementById('tableContainer').innerHTML = '<p>No valid structured data received.</p>';
+//        }
 
         // Add download link if available.
         if (result.download_url) {

@@ -18,7 +18,6 @@ def calculate_percentage_score(problem_count, total_count):
 @home_bp.route("/home")
 @login_required
 def home():
-    username = current_user.username
     return render_template("home.html")
 
 
@@ -32,10 +31,16 @@ def process_json():
         try:
             data = json.load(file)
         except Exception as e:
-            return jsonify({"error": "Invalid JSON file."}), 400
+            return jsonify({"error": f"Invalid JSON file."}), 400
+
 
         payload = {"query_string": data["analyzeResult"]["content"]}
-        ai_response = requests.post(current_app.config["AZURE_MODEL"], json=payload, headers={"Content-Type": "application/json"})
+        ai_response = requests.post(
+            current_app.config["AZURE_MODEL"],
+            json=payload,
+            headers={"Content-Type": "application/json"},
+            timeout=600
+        )
 
         data_to_share = []
         for page in ai_response.json()["page_statistics"]:
